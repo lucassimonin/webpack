@@ -1,6 +1,8 @@
 const path = require('path')
 const uglifyJs = require('uglifyjs-webpack-plugin')
 const ExtractTextPlugin = require("extract-text-webpack-plugin")
+const ManifestPlugin = require('webpack-manifest-plugin')
+const CleanWebpackPlugin = require('clean-webpack-plugin')
 const dev = process.env.NODE_ENV === "dev"
 
 let cssLoaders = [
@@ -9,13 +11,19 @@ let cssLoaders = [
 
 let config = {
     entry: {
-        app: './assets/js/app.js'
+        app: ['./assets/css/app.css', './assets/js/app.js']
     },
-    watch: true,
+    watch: dev,
     output: {
         path: path.resolve('./dist'),
-        filename: '[name].js',
+        filename: dev ? '[name].js' : '[name].[chunkhash:8].js',
         publicPath: '/dist/'
+    },
+    resolve: {
+        alias: {
+            '@css': path.resolve('./assets/css/'),
+            '@': path.resolve('./assets/js/')
+        }
     },
     devtool: dev ? "cheap-module-eval-source-map" : false,
     module: {
@@ -31,13 +39,35 @@ let config = {
                     fallback: "style-loader",
                     use: cssLoaders
                 })
+            },
+            {
+                test: /\.(woff2?|eot|ttf|otf|wav)(\?.*)?$/,
+                loader: 'file-loader'
+            },
+            {
+                test: /\.(png|jpg|gif|svg)$/,
+                use: [
+                    {
+                        loader: 'url-loader',
+                        options: {
+                            limit: 8192,
+                            name: '[name].[hash:7].[ext]'
+                        }
+                    },
+                    {
+                        loader: 'img-loader',
+                        options: {
+                            enabled: !dev
+                        }
+                    }
+                ]
             }
 
         ]
     },
     plugins: [
         new ExtractTextPlugin({
-            filename: '[name].css',
+            filename: dev ? '[name].css' : '[name].[contenthash:8].css',
             disable: dev
         })
     ]
@@ -45,6 +75,13 @@ let config = {
 
 if(!dev) {
     config.plugins.push(new uglifyJs())
+    config.plugins.push(new ManifestPlugin())
+    config.plugins.push(new CleanWebpackPlugin(['dist'], {
+        root: path.resolve('./')
+    }))
+
 }
+
+
 
 module.exports = config

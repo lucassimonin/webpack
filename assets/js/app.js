@@ -1,5 +1,6 @@
-import css from './app.css'
+import * as obj from './log.js'
+import bg from '@css/test.jpg'
 
-console.log(css)
+obj.log(bg)
 
 
