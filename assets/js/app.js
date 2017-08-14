@@ -1,3 +1,3 @@
-import { log2 } from './log.js'
+import * as obj from './log.js'
 
-log2('Salut')
+obj.log2('Salut')
