@@ -1,3 +1,3 @@
-var log = require('./log.js')
+import { log2 } from './log.js'
 
-log('Salut')
+log2('Salut')
